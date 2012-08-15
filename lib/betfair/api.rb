@@ -169,6 +169,18 @@ module Betfair
     end
     
     
+    def get_bet(session_token, exchange_id, bet_id, locale=nil)
+      response = exchange(exchange_id).
+        session_request( session_token,
+                         :getBet,
+                         :get_bet_response,
+                         betId:  bet_id, 
+                         locale:    locale )
+
+      return response.maybe_result( :bet )
+    end
+    
+    
     def get_market(session_token, exchange_id, market_id, locale = nil)
       response = exchange(exchange_id).
         session_request( session_token,
@@ -191,7 +203,17 @@ module Betfair
       
       return response.maybe_result( :market_prices )
     end
+    
+    
+    def get_all_event_types(session_token, locale=nil)
+      response = @global_service.
+        session_request( session_token,
+                         :getAllEventTypes,
+                         :get_all_event_types_response,
+                         locale: locale )
 
+      return response.maybe_result( :event_type_items, :event_type )
+    end
 
     def get_active_event_types(session_token, locale = nil)
       response = @global_service.
@@ -211,14 +233,28 @@ module Betfair
                          :get_all_markets_response,
                          eventTypeIds: { 'int' => event_type_ids },
                          locale:       locale,
-                         countries:    { 'Country' => countries },
+                         countries:    (countries.nil? ? nil : { 'Country' => countries }),
                          fromDate:     from_date,
                          toDate:       to_date )
       
       return response.maybe_result( :market_data )
     end
 
-
+    
+    def get_events(session_token, parent_id, locale=nil)
+      response = @global_service.session_request(session_token,
+                                                 :getEvents, 
+                                                 :get_events_response,
+                                                 eventParentId: parent_id,
+                                                 locale: locale)
+      
+      return {
+        events: response.maybe_result(:event_items, :bf_event),
+        markets: response.maybe_result(:market_items, :market_summary)
+      }
+    end
+    
+    
     def get_account_funds( session_token, exchange_id )
       response = exchange(exchange_id).
         session_request( session_token,
@@ -286,8 +322,6 @@ module Betfair
       @aus_service    = SOAPClient.aus( proxy )
 
     end
-
-
 
 
     # A wrapper around the raw Savon::Client to hide the details of
