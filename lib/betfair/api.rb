@@ -347,7 +347,7 @@ module Betfair
 
 
       # Wrapper to avoid leaking Savon's logging API
-      def self.log=(logging); Savon.log = !!logging; end
+      def self.log=(logging); Savon.config.log = !!logging; end
 
 
       # Pass the `region` (see ENDPOINTS for valid values) to pick the
@@ -425,7 +425,7 @@ module Betfair
 
 
 
-  class Helpers  	  	
+  module Helpers  	  	
     
     ## HELPER METHODS
     #
