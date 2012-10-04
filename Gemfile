@@ -5,7 +5,8 @@ gem 'savon', ">= 0.9.12"
 gem 'gemcutter'
 
 gem 'rspec'
-gem 'savon_spec'
+gem 'savon_spec', '= 0.1.5'
+gem 'mocha', '=0.10.4'
 
 gemspec
 
