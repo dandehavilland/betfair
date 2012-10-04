@@ -365,14 +365,21 @@ module Betfair
       # Delegate the SOAP call to bf:`method` with `body` as the
       # `bf:request` field.  Getting a Hash back, this method returns
       # response[result_field][:result] as its result.
-      def request( method, result_field, body )
+      def request( method, result_field, body, count=1 )
         response = @client.request( :bf, method ) {
           soap.body = { 'bf:request' => body }
         }.to_hash[result_field][:result]
 
         response.extend( ErrorPresenter )
         
-        response
+        if response[:header][:error_code] == "EXCEEDED_THROTTLE"
+          raise ThrottleExceeded.new(count) if count == 6
+          
+          sleep(2**count)
+          return request(method, result_field, body, count+1)
+        else
+          return response
+        end
       end
 
 
@@ -721,4 +728,5 @@ module Betfair
     
   end
   
+  class ThrottleExceeded < StandardError; end
 end
